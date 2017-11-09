@@ -174,44 +174,12 @@ void agregarAlArreglo(unsigned char datosCodificados[], unsigned char codigo, in
 {
     if((posicionBit+longitud) <= 8){
     //Este es el caso facil, lo puedo agregar en el mismo byte
-        //Quiero convertir lo que tenemos escrito del byte en un arreglo de ints y terminar de llenarlo con 0. Para poder user bitwise operations
-        int loQueLlevamosPasandoAInt;
-        int tempPosicionBit = posicionBit;
-        int tempByte[8];
-        for(loQueLlevamosPasandoAInt = 0; loQueLlevamosPasandoAInt < 8; loQueLlevamosPasandoAInt++){
-            if(tempPosicionBit > 0){
-            unsigned char charAPasar = datosCodificados[(nuevoTamanio- longitud) - tempPosicionBit];
-            tempByte[loQueLlevamosPasandoAInt] = ((int)charAPasar) -'0';
-            tempPosicionBit = tempPosicionBit +1;
-            }else{
-             //Tengo que agregar 0
-             tempByte[loQueLlevamosPasandoAInt] = 0;
-            }
-        }
-        //Ahora tengo que crear el bit para el bitwise operation 
-        tempPosicionbitBit = posicionBit;
-        tempLogitud = 0;
-        int byteConCodigo[8];
-        int i;
-        for(i = 0 ; i < 8; i++){
-            //Tengo que poner tantos 0 como posicion bit, luego agregar el codigo y si faltan bits para completar 8 pongo más 0
-            if(tempPosicionbitBit > 0){
-            byteConCodigo[i] = 0;
-            }else if(tempLogitud <= logitud) {
-            //Saco el primer dato
-             byteConCodigo[i] = (codigo >> tempLogitud) & 1;
-            }else{
-            byteConCodigo[i] 0 = 0;
-            }    
-        }
-        //No estoy seguro de esta parte
-        int byteYaFormateado[8];
-        int j;
-        for(j = 0; j < 8; j++ ){
-        byteYaFormateado[i] = byteYaFormateado[i]|tempByte[i];
-        }
-        //Ahora toca cojer el bit que ya esta formateado y agregarlo al array de caracteres
-        
+        //
+        unsigned char dondeFormatearCharacter = datosCodificados[nuevoTamanio];
+        unsigned int shift = posicionBit - longitud;
+        unsigned char codigoConShift = codigo << shift;
+        unsigned char charFormateado = dondeFormatearCharacter|codigoConShift;
+        datosCodificados[nuevoTamanio] = charFormateado;
     
     }else{
      //Me toca hacerlo en diferentes bytes

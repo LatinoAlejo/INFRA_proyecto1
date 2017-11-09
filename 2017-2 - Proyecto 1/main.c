@@ -147,57 +147,34 @@ void writeFile(int n, Archivo * archivoCodificado, char *nombreArchivo)
 // DESARROLLAR ESTA FUNCION EN SU TOTALIDAD.
 int codificar(Archivo * archivo, Archivo * archivocodificado)
 {
+	int tamCharacteres = readFile(archivo, "");
+	int i;
+	int numeroDeBitsGuardados = 0;
+	int tempPosicionBit = 0;
+	unsigned char dondeGuardoLosBytesFormateados[TAMANIO_MAX];
+	for(i  = 0; i <= tamCharacteres; i++){
+	 //tengo que leer en archivo, el dato de 
+	 unsigned char *direccionInformacion = archivo -> informacion;
+	 unsigned char tempChar = *(direccionInformacion+i);//le sumo 1 porque cada byte vale 1
+	 //Ahora necesito saber cual es el numero de 1 a 26, recuerda:esta en ascii
+	 unsigned char dirreccionParaLosArreglos = tempChar - 'A';
+	 unsigned char charACodificar;
+	 charACodificar = codigoCompresion[dirreccionParaLosArreglos];
+	 int tempLogitud = longitudCodigo[dirreccionParaLosArreglos];
+	 //Ahora Teniendo Esa Informacion puedo llamar el siguiente metodo
+	 //p.s el parametro nuevoTamanio va a decir en que numero de character va
+	 agregarAlArreglo(dondeGuardoLosBytesFormateados, charACodificar, tempPosicionBit, tempLogitud, numeroDeBitsGuardados%8);
+	 
+	 //Alisto las variables para el sigueinte llamado
+	 numeroDeBitsGuardados = numeroDeBitsGuardados + tempLogitud;
+	 tempPosicionBit = tempPosicionBit + tempLogitud;
+	    if(tempPosicionBit > 8){
+	    tempPosicionBit = (tempPosicionBit - 8);
+	    }
+	}
+	//Al final del ciclo tengo que escribir en el archivo los nuevos bytes que tengo en el arreglo dondeGuardoLosBytesFormateados[]
+	writeFile(numeroDeBitsGuardados%8, )
 	
-	File file1* file2*; //Archivos
-	int tam = 0; //Tamanho en cantidad de caracteres
-	int[] a = new int[100]; //Cadena de caracteres sin comprimir en binarios(estan en binarios por el fgetc que devuelve un int del unsigned char)
-	int[] b = new int[100]; //Cadena de caracteres codificada
-	if (!(file1 = fopen(archivo, "r"))) {
-		printf("No se puede abrir el archivo: %s\n", archivo);
-		exit(EXIT_FAILURE);
-	}
-	else{
-		file1 = fopen(archivo, "r");
-		while(feof(file1))
-		{
-			tam++; //Se guarda el tamanho
-			a[tam] = fgetc(file1); //Se guarda el unsigned char en cada posicion
-		}
-	}
-	int j = 1; //Contador para iterar sobre la cadena "a"
-	b[0] = 0; //Inicia a codificar de la siguiente forma, el primer caracter empieza en 0, luego 1, luego 10, 11, 100, 101 y así sucesivamente
-	while(j < tam)
-	{
-		int i = j-1; 
-		int k = 1; //El valor en entero del numero de codificacion(Falta pasarlo a binario)
-		while(i > 0)
-		{
-			if(a[j] != a[i]) //Si la letra a codificar no ha sido codificada aun, se le da el valor de la posicion(TOCA PASAR A BINARIO)
-			{
-				b[j] = k; 
-				k++;
-			} 
-			else //Sino, se le da el valor del que ya tenía
-			{
-				b[j] = b[k];
-			}
-			i--;
-		}
-		k++;
-		j++;
-	}
-	if (!(file2 = fopen(archivocodificado, "w"))) {
-		printf("No se puede abrir el archivo codificado: %s\n", archivocodificado);
-		exit(EXIT_FAILURE);
-	}
-	else{
-		file2 = fopen(archivocodificado, "w"); //Finalmente se abre el nuevo archivo
-		int i = 0;
-		while(i<tam)
-		{
-			fputc(b[i], file2); //Pone caracter por caracter en el nuevo archivo
-		}
-	}
 }
 
 // Esta funcion recibe como parametros el vector de datos codificados,
@@ -213,33 +190,49 @@ void agregarAlArreglo(unsigned char datosCodificados[], unsigned char codigo, in
 {
     if((posicionBit+longitud) <= 8){
     //Este es el caso facil, lo puedo agregar en el mismo byte
-        //
-        unsigned char dondeFormatearCharacter = datosCodificados[nuevoTamanio];
-        unsigned int shift = posicionBit - longitud;//El numero de 0 que tengo agregar
-        unsigned char codigoConShift = codigo << shift;
-        unsigned char charFormateado = dondeFormatearCharacter|codigoConShift;
-        datosCodificados[nuevoTamanio] = charFormateado;
+        //Quiero convertir lo que tenemos escrito del byte en un arreglo de ints y terminar de llenarlo con 0. Para poder user bitwise operations
+        int loQueLlevamosPasandoAInt;
+        int tempPosicionBit = posicionBit;
+        int tempByte[8];
+        for(loQueLlevamosPasandoAInt = 0; loQueLlevamosPasandoAInt < 8; loQueLlevamosPasandoAInt++){
+            if(tempPosicionBit > 0){
+            unsigned char charAPasar = datosCodificados[(nuevoTamanio- longitud) - tempPosicionBit];
+            tempByte[loQueLlevamosPasandoAInt] = ((int)charAPasar) -'0';
+            tempPosicionBit = tempPosicionBit +1;
+            }else{
+             //Tengo que agregar 0
+             tempByte[loQueLlevamosPasandoAInt] = 0;
+            }
+        }
+        //Ahora tengo que crear el bit para el bitwise operation 
+        int tempPosicionbitBit = posicionBit;
+        int tempLogitud = 0;
+        int byteConCodigo[8];
+        int i;
+        for(i = 0 ; i < 8; i++){
+            //Tengo que poner tantos 0 como posicion bit, luego agregar el codigo y si faltan bits para completar 8 pongo más 0
+            if(tempPosicionbitBit > 0){
+            byteConCodigo[i] = 0;
+            }else if(tempLogitud <= longitud) {
+            //Saco el primer dato
+             byteConCodigo[i] = (codigo >> tempLogitud) & 1;
+            }else{
+            byteConCodigo[i] = 0;
+            }    
+        }
+        //No estoy seguro de esta parte
+        int byteYaFormateado[8];
+        int j;
+        for(j = 0; j < 8; j++ ){
+        byteYaFormateado[i] = byteYaFormateado[i]|tempByte[i];
+        }
+        //Ahora toca cojer el bit que ya esta formateado y agregarlo al array de caracteres
+        
     
     }else{
      //Me toca hacerlo en diferentes bytes
-        //Toca dividir el codigo en dos char's, uno lo muevo a la izquierda para perder los bits extras((posicionBit+longitud)-8)
-        //El otro char lo muevo a la derecha para sacar los bit de la derecha
-        int shiftIzquierda_PrimerChar = ((posicionBit+longitud)-8);
-        unsigned char tempPrimerChar = codigo;
-        tempPrimerChar = tempPrimerChar >> shiftIzquierda_PrimerChar;
-        
-        int shiftDerecha_SegundoChar = (8 - shiftIzquierda_PrimerChar);
-        unsigned char tempSegundoChar = codigo;
-        tempSegundoChar = tempSegundoChar << shiftDerecha_SegundoChar;
-        
-        //Ahora los agrego a sus respectivos bytes
-        unsigned char primerCharParaFormatear = datosCodificados[nuevoTamanio];
-        primerCharParaFormatear = primerCharParaFormatear|tempPrimerChar;
-        datosCodificados[nuevoTamanio] = primerCharParaFormatear;
-        
-        unsigned char segundoCharParaFormatear = datosCodificados[(nuevoTamanio+1)];
-        segundoCharParaFormatear = segundoCharParaFormatear|tempSegundoChar;
-        datosCodificados[(nuevoTamanio+1)] = segundoCharParaFormatear;
+     
+     
     }
 }
 

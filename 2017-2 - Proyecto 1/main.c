@@ -173,8 +173,13 @@ int codificar(Archivo * archivo, Archivo * archivocodificado)
 	    }
 	}
 	//Al final del ciclo tengo que escribir en el archivo los nuevos bytes que tengo en el arreglo dondeGuardoLosBytesFormateados[]
-	writeFile(numeroDeBitsGuardados%8, )
+	uploadCode(dondeGuardoLosBytesFormateados, "");
 	
+	Archivo* formateado = new  Archivo();
+	formateado->tamanio = (numeroDeBitsGuardados%8);
+	formateado->informacion = dondeGuardoLosBytesFormateados;
+	
+	writeFile(numeroDeBitsGuardados%8, formateado, "");
 }
 
 // Esta funcion recibe como parametros el vector de datos codificados,

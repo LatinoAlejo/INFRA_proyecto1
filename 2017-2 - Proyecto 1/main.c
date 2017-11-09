@@ -176,15 +176,31 @@ void agregarAlArreglo(unsigned char datosCodificados[], unsigned char codigo, in
     //Este es el caso facil, lo puedo agregar en el mismo byte
         //
         unsigned char dondeFormatearCharacter = datosCodificados[nuevoTamanio];
-        unsigned int shift = posicionBit - longitud;
+        unsigned int shift = posicionBit - longitud;//El numero de 0 que tengo agregar
         unsigned char codigoConShift = codigo << shift;
         unsigned char charFormateado = dondeFormatearCharacter|codigoConShift;
         datosCodificados[nuevoTamanio] = charFormateado;
     
     }else{
      //Me toca hacerlo en diferentes bytes
-     
-     
+        //Toca dividir el codigo en dos char's, uno lo muevo a la izquierda para perder los bits extras((posicionBit+longitud)-8)
+        //El otro char lo muevo a la derecha para sacar los bit de la derecha
+        int shiftIzquierda_PrimerChar = ((posicionBit+longitud)-8);
+        unsigned char tempPrimerChar = codigo;
+        tempPrimerChar = tempPrimerChar >> shiftIzquierda_PrimerChar;
+        
+        int shiftDerecha_SegundoChar = (8 - shiftIzquierda_PrimerChar);
+        unsigned char tempSegundoChar = codigo;
+        tempSegundoChar = tempSegundoChar << shiftDerecha_SegundoChar;
+        
+        //Ahora los agrego a sus respectivos bytes
+        unsigned char primerCharParaFormatear = datosCodificados[nuevoTamanio];
+        primerCharParaFormatear = primerCharParaFormatear|tempPrimerChar;
+        datosCodificados[nuevoTamanio] = primerCharParaFormatear;
+        
+        unsigned char segundoCharParaFormatear = datosCodificados[(nuevoTamanio+1)];
+        segundoCharParaFormatear = segundoCharParaFormatear|tempSegundoChar;
+        datosCodificados[(nuevoTamanio+1)] = segundoCharParaFormatear;
     }
 }
 

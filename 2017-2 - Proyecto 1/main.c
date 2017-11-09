@@ -129,27 +129,16 @@ void uploadCode(unsigned char codigo[], char *nombreArchivoCodigo)
 // Esta funcion se encarga de escribir un archivo a partir del vector datos.
 // El numero de bytes que se deben escribir viene en el parametro n.
 // No hay que completar nada en esta funcion.
-// NO MODIFICAR
 void writeFile(int n, Archivo * archivoCodificado, char *nombreArchivo)
 {
-	FILE *file;
-	char datos[] = "";
-	char filter = (char) 127;
-	int i;
-	
-	strcpy(datos, archivoCodificado->informacion);
-    for( i = 0; i < n; i++){
-        datos[i] = datos[i] & filter;
-    }
-
-	if (!(file = fopen(nombreArchivo, "wb"))) {
-		printf("No se puede abrir el archivo: %s\n", nombreArchivo);
-		exit(EXIT_FAILURE);
-	}
-
-	fwrite(datos, 1, n, file);
-
-	fclose(file);
+     FILE *file; 
+      if (!(file = fopen(nombreArchivo, "wb")))
+      { 
+              printf("No se puede abrir el archivo: %s\n", nombreArchivo); 
+              exit(EXIT_FAILURE); 
+      }
+        fwrite((archivoCodificado->informacion), 1, n, file);
+ fclose(file);
 }
 
 
@@ -159,6 +148,56 @@ void writeFile(int n, Archivo * archivoCodificado, char *nombreArchivo)
 int codificar(Archivo * archivo, Archivo * archivocodificado)
 {
 	
+	File file1* file2*; //Archivos
+	int tam = 0; //Tamanho en cantidad de caracteres
+	int[] a = new int[100]; //Cadena de caracteres sin comprimir en binarios(estan en binarios por el fgetc que devuelve un int del unsigned char)
+	int[] b = new int[100]; //Cadena de caracteres codificada
+	if (!(file1 = fopen(archivo, "r"))) {
+		printf("No se puede abrir el archivo: %s\n", archivo);
+		exit(EXIT_FAILURE);
+	}
+	else{
+		file1 = fopen(archivo, "r");
+		while(feof(file1))
+		{
+			tam++; //Se guarda el tamanho
+			a[tam] = fgetc(file1); //Se guarda el unsigned char en cada posicion
+		}
+	}
+	int j = 1; //Contador para iterar sobre la cadena "a"
+	b[0] = 0; //Inicia a codificar de la siguiente forma, el primer caracter empieza en 0, luego 1, luego 10, 11, 100, 101 y así sucesivamente
+	while(j < tam)
+	{
+		int i = j-1; 
+		int k = 1; //El valor en entero del numero de codificacion(Falta pasarlo a binario)
+		while(i > 0)
+		{
+			if(a[j] != a[i]) //Si la letra a codificar no ha sido codificada aun, se le da el valor de la posicion(TOCA PASAR A BINARIO)
+			{
+				b[j] = k; 
+				k++;
+			} 
+			else //Sino, se le da el valor del que ya tenía
+			{
+				b[j] = b[k];
+			}
+			i--;
+		}
+		k++;
+		j++;
+	}
+	if (!(file2 = fopen(archivocodificado, "w"))) {
+		printf("No se puede abrir el archivo codificado: %s\n", archivocodificado);
+		exit(EXIT_FAILURE);
+	}
+	else{
+		file2 = fopen(archivocodificado, "w"); //Finalmente se abre el nuevo archivo
+		int i = 0;
+		while(i<tam)
+		{
+			fputc(b[i], file2); //Pone caracter por caracter en el nuevo archivo
+		}
+	}
 }
 
 // Esta funcion recibe como parametros el vector de datos codificados,
